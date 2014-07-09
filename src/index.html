@@ -3,6 +3,8 @@
 <head>
 <link rel='stylesheet' href='style.css' type='text/css'>
 <script src='ractive.js'></script>
+<script src='aggregate-functions.js'></script>
+<script src='mock-data.js'></script>
 </head>
 <body>
 <script type='text/template' id='template'>
@@ -17,7 +19,7 @@
       </thead>
       <tbody>
       
-        {{#groupBy(rows,"telephone")}}
+        {{#Aggregate.groupBy(rows,"telephone")}}
         <tr style='background-color:green'>
           <td>{{key}}</td>
         </tr>
@@ -26,7 +28,7 @@
         <!--{{#rowsInView}}-->
         <tr>
             {{#.}}
-              <td >{{index}}</td>
+              <td>{{index}}</td>
               <td>{{name}}</td>
               <td>{{address}}</td>
               <td>{{city}}</td>
@@ -36,14 +38,14 @@
         </tr>
         {{/data}}
         
-        <tr><td>{{sum(.,"index")}}</td></tr>
+        <tr><td>{{Aggregate.sum(.,"index")}}</td></tr>
         
         <!--{{/rowsInView}}-->
-        {{/groupBy(rows,"telephone")}}
+        {{/Aggregate.groupBy(rows,"telephone")}}
       </tbody>
     </table>
     <div class='virtual-scroll-pane' on-scroll='scrolling' on-click='clicked'>
-      <div class='virtual-content' style='height:{{virtualScrollPane.virtualContent.height}};'></div>
+      <div class='virtual-content' style='height:{{virtualScrollPane.virtualContent.height}}px;'></div>
     </div>
   </div>
 </script>
@@ -56,45 +58,14 @@
     , headerHeight = rowHeight
     , numberOfRowsToShow = 20
 
-  var rows = []
-  var columns = [
-    'index',
-    'name',
-    'address',
-    'city',
-    'state',
-    'telephone'
-  ]
-  
-  function uniform() {
-    //not exactly a uniform distribution but close enough i hope
-    var randomIndex = Math.floor(Math.random() * (arguments.length))
-    return arguments[randomIndex]
-  }
+  var rows = MockData.generateRows()
+  var columns = MockData.generateColumns()
 
-  function generateData() {
-    for (i=0; i< 1000; i++) {
-      rows.push({
-        index : i,
-        name : 'brett',
-        address : '123 Main',
-        city : 'boston',
-        state : 'mass',
-        telephone : uniform('111-111-1111', '222-222-2222', '333-333-3333')
-      })
-    }
-  }
-  
-  
-  
-  generateData()
 
   ractive = new Ractive({
-    debug:true,
     el  : document.querySelector('#container'),
     data : {
-      groupBy: groupBy,
-      sum : sum,
+      Aggregate : Aggregate,
       rows : rows,
       rowsInView : [], //the call to sliceData() will initialize this
       columns : columns,
@@ -123,50 +94,21 @@
       sliceData(start,end)
     },
     clicked : function (event) {
-     var y = event.original.offsetY - ractive.find('.virtual-scroll-pane').scrollTop
-     var x = event.original.offsetX
+
+     // Not working properly at the moment
+
+     // var y = event.original.offsetY - ractive.find('.virtual-scroll-pane').scrollTop
+     // var x = event.original.offsetX
      
-     var evt = document.createEvent('MouseEvent');
-        evt.initMouseEvent('click', true, true, window, 0, screenX, screenY, x, y, true, false, false, true, 0, null);
+     // var evt = document.createEvent('MouseEvent');
+     //    evt.initMouseEvent('click', true, true, window, 0, screenX, screenY, x, y, true, false, false, true, 0, null);
 
      
-     ractive.find('.table-container table')
+     // ractive.find('.table-container table')
      
     }
   })
   
-  function groupBy(data, property) {
-    var groupings = {}
-    
-    data.forEach(function (dataPoint) {
-      if (!(dataPoint[property] in groupings)) {
-        groupings[dataPoint[property]] = {key : dataPoint[property], data : [dataPoint]}
-      }
-      else {
-       groupings[dataPoint[property]].data.push(dataPoint) 
-      }
-    })
-    
-    return Object.keys(groupings).map(function(key) { //optimize me
-      return groupings[key]
-    })
-  } 
-  
-  
-  function sum(groupedByData, field) { 
-  /*assume
-  
-  [{key: key, data : [datapoint1,datapoint2]}]
-  */
-  
-    var theSum = groupedByData.data.reduce(function (previous, datapoint) {
-      return previous + datapoint[field]
-    },0)
-  
-    
-    return theSum
-    
-  }
   
   function sliceData(start,end) {
     ractive.merge('rowsInView', rows.slice(start,end))
