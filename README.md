@@ -3,10 +3,12 @@ gridness
 
 Yet another javascript grid.
 
-After running ```
+After running 
+```
 npm install
 ```
 
-get a kitchen sink example up and running with ```
+get a kitchen sink example up and running with 
+```
 gulp
 ```
