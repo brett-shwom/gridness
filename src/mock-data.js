@@ -22,7 +22,7 @@ MockData = (function () {
     return rows
   }
 
-  function generateColumns = function() {
+  function generateColumns() {
     return [
       'index',
       'name',

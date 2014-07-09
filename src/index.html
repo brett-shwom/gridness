@@ -20,10 +20,11 @@
       <tbody>
       
         {{#Aggregate.groupBy(rows,"telephone")}}
-        <tr style='background-color:green'>
+        <tr style='background-color:green; cursor:pointer;' on-click='toggleGroupingVisibility'>
           <td>{{key}}</td>
         </tr>
         
+        {{#!invisibleGroups[key]}}
         {{#data}}
         <!--{{#rowsInView}}-->
         <tr>
@@ -37,6 +38,8 @@
             {{/.}}
         </tr>
         {{/data}}
+        {{/!invisibleGroups[key]}}
+
         
         <tr><td>{{Aggregate.sum(.,"index")}}</td></tr>
         
@@ -44,9 +47,9 @@
         {{/Aggregate.groupBy(rows,"telephone")}}
       </tbody>
     </table>
-    <div class='virtual-scroll-pane' on-scroll='scrolling' on-click='clicked'>
+    <!--<div class='virtual-scroll-pane' on-scroll='scrolling' on-click='clicked'>
       <div class='virtual-content' style='height:{{virtualScrollPane.virtualContent.height}}px;'></div>
-    </div>
+    </div>--><!--commented out while i figure out how to deal with sending click events through the virtual-scroll-pane-->
   </div>
 </script>
 
@@ -67,6 +70,7 @@
     data : {
       Aggregate : Aggregate,
       rows : rows,
+      invisibleGroups : {},
       rowsInView : [], //the call to sliceData() will initialize this
       columns : columns,
       virtualScrollPane : {
@@ -92,6 +96,13 @@
         , end = start + numberOfRowsToShow
         
       sliceData(start,end)
+    },
+    toggleGroupingVisibility : function (event) {
+      console.log('tt')
+      var group = event.context
+
+      ractive.toggle('invisibleGroups.' + group.key) //a bit of ractive keypath fun
+
     },
     clicked : function (event) {
 
