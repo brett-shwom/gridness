@@ -1,0 +1,51 @@
+/* http://css-tricks.com/snippets/css/better-helvetica/ */
+body {
+ font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif; 
+ font-weight: 300;
+}
+
+table {
+ border-collapse:collapse;
+}
+
+tr {
+ height:20px;
+}
+
+td {
+ border: 1px solid black;
+ padding-left:2px;
+ padding-right:2px;
+}
+
+tbody {
+ height:200px; 
+}
+
+
+.table-container {
+  
+  $numberOfRowsToShow = 20
+  $headerHeight = 20px + 1px
+  $rowHeight = 20px
+  
+  position:relative;
+  width:600px;
+  height:$numberOfRowsToShow * $rowHeight + $headerHeight;
+
+  table {
+    position:absolute;
+    width:100%;
+  }
+  
+  .virtual-scroll-pane {
+    position:absolute;
+    top:$headerHeight;
+    background-color:red; /*helpful for debugging */
+    width:100%;
+    height:100%;
+    opacity:0.5;
+    overflow-y:scroll;
+  }
+  
+}
