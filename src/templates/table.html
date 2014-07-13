@@ -4,22 +4,22 @@
       <tr>
 
         {{#frozenColumns}}
-        <th>kl{{.}}</th>
+        <th>{{.}}</th>
         {{/frozenColumns}}
 
-        {{#columns}}
+        {{#virtualColumns}}
         <th>{{.}}</th>
-        {{/columns}}
+        {{/virtualColumns}}
       </tr>
     </thead>
     <tbody>
 
       {{#frozenRows}}
-        {{>row}}
+        <tableRow row='{{.}}' virtualColumns='{{virtualColumns}}' />
       {{/frozenRows}}
     
       {{#virtualRows}}
-        {{>row}}
+        <tableRow row='{{.}}' virtualColumns='{{virtualColumns}}' />
       {{/virtualRows}}
 
     </tbody>

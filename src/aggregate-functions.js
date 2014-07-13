@@ -10,38 +10,42 @@ Aggregate = (function () {
     }
   }
 
-  function orderBy(data) {
+  function orderBy(data /* , rest parameters */) {
 
     //at this point, this will only work on ungrouped data (grouped data has a different structure : [{key:key, data:{property1:val1,property2:val2}]...] vs [{property1:val1,property2:val2}...])
     
     var properties = Array.prototype.slice.call(arguments, 1) //pass properties as rest arguments
+      , comparator
+      , comparatorComposed
 
-    var comparator
+    if (properties.length > 0) { //if no order by properties are passed, just return the original data
 
 
-    // switch (dataType) {
-    //   case 'string'  :
-    //   case 'numeric' : 
-    //   default        :
+      // switch (dataType) {
+      //   case 'string'  :
+      //   case 'numeric' : 
+      //   default        :
 
-    var comparatorComposed = firstBy(function (c,d) {
-      return comparators.numeric(properties[0],c,d)
-    })
-
-    comparatorComposed = properties.slice(1).reduce(function(previous, current) {
-      return previous.thenBy(function (c,d) {
-        return comparators.numeric(current,c,d)
+      comparatorComposed = firstBy(function (c,d) {
+        return comparators.numeric(properties[0],c,d)
       })
-    },comparatorComposed)
 
-        //comparator = comparators.numeric(property)
-    //    break
-    //}
+      comparatorComposed = properties.slice(1).reduce(function(previous, current) {
+        return previous.thenBy(function (c,d) {
+          return comparators.numeric(current,c,d)
+        })
+      },comparatorComposed)
 
-    data = data.slice() //clone array (assumption is that data is in an array)
-    
-    data.sort(comparatorComposed)
-    
+          //comparator = comparators.numeric(property)
+      //    break
+      //}
+
+      data = data.slice() //clone array (assumption is that data is in an array)
+      
+      data.sort(comparatorComposed)
+    }
+
+
     return Object.create(data, {
       groupBy : {
         value : function(property) {

@@ -9,6 +9,8 @@
   <script src='helpers/object.create-polyfill.js'></script>
   <script src='lib/thenBy.js'></script>
   <script src='helpers/xhrRequest.js'></script>
+  <script src='components/tableCell.js'></script>
+  <script src='components/tableRow.js'></script>
 </head>
 <body>
   <div id='container'></div>
@@ -20,13 +22,15 @@
 
     var Templates = (function () {
       return {
-        table    : getSync('templates/table.html'),
-        tableRow : getSync('templates/tableRow.html')
+        table    : getSync('templates/table.html')
       }
     })()
 
     var rows = MockData.generateRows()
     var columns = MockData.generateColumns()
+
+
+    var virtualColumns = columns
 
     
     var aggregationBeforeFlattening = Aggregate //cache this + reflatten it every time an aggregation is hidden/shown -- flattening is cheap!
@@ -57,12 +61,13 @@
         virtualRows : [],//the call to sliceData() will initialize this
         //memoize : memoize,
         frozenRows : [],
-        frozenColumns : [],
         invisibleGroups : {},
-        columns : columns
-      }, 
-      partials : {
-        row : Templates.tableRow
+        virtualColumns : virtualColumns,
+        frozenColumns : []
+      },
+      components : {
+        tableCell : Components.tableCell,
+        tableRow : Components.tableRow
       },
       template : Templates.table
     })

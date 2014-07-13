@@ -1,5 +1,5 @@
 gridness
-========
+---------------
 
 Yet another javascript grid.
 
@@ -21,3 +21,6 @@ The kitchen sink example demonstrates the following functionality:
 - Performing Aggregate functions on grouped data (currently only supports a single level of grouping and aggregating)
 - Opening and closing grouped data
 - Freezing rows
+
+Concepts
+================

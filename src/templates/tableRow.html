@@ -1,32 +1,39 @@
+{{#row}}
 {{# __type__ === 'header'}}
+
 
 <tr style='background-color:green; cursor:pointer;' class='{{__frozenRow__ ? "frozenRow" : ""}}' on-click='toggleGroupingVisibility' data-key='{{key}}'>
   <td>Key : {{key}}</td>
 </tr>
 
+
 {{/ __type__ === 'header' }}
 
-{{# __type__ === undefined }}
+{{# __type__ === undefined }} <!--undefined === a piece of data - pretty counter-intuitive-->
+
 
 <tr class='{{__frozenRow__ ? "frozenRow" : ""}}' >
-    {{#.}}
-      <td>{{index}}</td>
-      <td>{{name}}</td>
-      <td>{{address}}</td>
-      <td>{{city}}</td>
-      <td>{{telephone}}</td>
-      <td>{{age}}</td>
-      <td>{{eyeColor}}</td>
-      <td>{{score}}</td>
-      <td>{{awesome}}</td>
-    {{/.}}
+  
+  {{#virtualColumns}}
+
+    <tableCell row='{{row}}' column='{{.}}' /> <!-- there would be an issue if row were a property of virtualColums - chances seem low though -->
+
+  {{/virtualColumns}}
+    
 </tr>
+
 
 {{/ __type__ === undefined}}
 
 
 {{# __type__ === 'footer'}}
 
-<tr><td>Sum</td><td>{{sum['index']}}</td></tr>
+<tr>
+  <td>Sum</td>
+  <td>{{sum['index']}}</td>
+</tr>
+
 
 {{/ __type__ === 'footer'}}
+
+{{/row}}
