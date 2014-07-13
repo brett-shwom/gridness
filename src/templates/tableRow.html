@@ -1,6 +1,6 @@
 {{# __type__ === 'header'}}
 
-<tr style='background-color:green; cursor:pointer;' class='{{__frozen__ ? "frozen" : ""}}' on-click='toggleGroupingVisibility' data-key='{{key}}'>
+<tr style='background-color:green; cursor:pointer;' class='{{__frozenRow__ ? "frozenRow" : ""}}' on-click='toggleGroupingVisibility' data-key='{{key}}'>
   <td>Key : {{key}}</td>
 </tr>
 
@@ -8,7 +8,7 @@
 
 {{# __type__ === undefined }}
 
-<tr class='{{__frozen__ ? "frozen" : ""}}' >
+<tr class='{{__frozenRow__ ? "frozenRow" : ""}}' >
     {{#.}}
       <td>{{index}}</td>
       <td>{{name}}</td>

@@ -1,173 +1,166 @@
 <!DOCTYPE html>
 <html>
 <head>
-<link rel='stylesheet' href='lib/cssreset-min.css' type='text/css'>
-<link rel='stylesheet' href='style.css' type='text/css'>
-<script src='lib/ractive-legacy.js'></script>
-<script src='aggregate-functions.js'></script>
-<script src='mock-data.js'></script>
-<script src='helpers/object.create-polyfill.js'></script>
-<script src='lib/thenBy.js'></script>
-<script src='helpers/xhrRequest.js'></script>
+  <link rel='stylesheet' href='lib/cssreset-min.css' type='text/css'>
+  <link rel='stylesheet' href='style.css' type='text/css'>
+  <script src='lib/ractive-legacy.js'></script>
+  <script src='aggregate-functions.js'></script>
+  <script src='mock-data.js'></script>
+  <script src='helpers/object.create-polyfill.js'></script>
+  <script src='lib/thenBy.js'></script>
+  <script src='helpers/xhrRequest.js'></script>
 </head>
 <body>
-<script type='text/template' id='template'>
-  
-</script>
-<script type='text/template' id='rowTemplate'>
+  <div id='container'></div>
 
-</script>
+  <script >
+    
+    //avoiding a more complicated build process at this point
+    //replate this later with template concatenation in the build process
 
-<div id='container'></div>
+    var Templates = (function () {
+      return {
+        table    : getSync('templates/table.html'),
+        tableRow : getSync('templates/tableRow.html')
+      }
+    })()
 
-<script >
-  
-  //avoiding a more complicated build process at this point
-  //replate this later with template concatenation in the build process
+    var rows = MockData.generateRows()
+    var columns = MockData.generateColumns()
 
-  var Templates = (function () {
-    return {
-      table    : getSync('templates/table.html'),
-      tableRow : getSync('templates/tableRow.html')
+    
+    var aggregationBeforeFlattening = Aggregate //cache this + reflatten it every time an aggregation is hidden/shown -- flattening is cheap!
+      //.orderBy(rows, 'telephone') /*the more order bys, the longer -- maybe think about writing thenBy iteratively - doesnt seemt to work in ie8*/
+      .groupBy(rows,'telephone')
+      .sum("index")
+      .header()
+      .footer()
+
+    var startTime = new Date
+
+    var projectedRows = aggregationBeforeFlattening
+      .flatten()
+
+    console.log('time taken to flatten ' + (projectedRows.length).toLocaleString() + ' rows', (startTime.getTime() - (new Date).getTime())/1000)
+
+
+    var start = 0
+    var virtualWindowSize = 10
+
+    //console.log(projectedRows)
+
+    var ractive = new Ractive({
+      el  : document.querySelector('#container'),
+      debug : true,
+      twoway :false,
+      data : {
+        virtualRows : [],//the call to sliceData() will initialize this
+        //memoize : memoize,
+        frozenRows : [],
+        frozenColumns : [],
+        invisibleGroups : {},
+        columns : columns
+      }, 
+      partials : {
+        row : Templates.tableRow
+      },
+      template : Templates.table
+    })
+
+    function freezeRows(topNRows) {
+      ractive.set('frozenRows', ractive.get('virtualRows').slice(0,topNRows).map(function (row) { //i feel like this should go into aggregate-functions.js
+        return Object.create(row, {
+          __frozenRow__ : {
+            value: true,
+            writable: true,
+            enumerable: true,
+            configurable: true //ractive magic mode gets angry if this is false 
+          }
+        })
+      }))
     }
-  })()
 
-  var rows = MockData.generateRows()
-  var columns = MockData.generateColumns()
-
-  
-  var aggregationBeforeFlattening = Aggregate //cache this + reflatten it every time an aggregation is hidden/shown -- flattening is cheap!
-    //.orderBy(rows, 'telephone') /*the more order bys, the longer -- maybe think about writing thenBy iteratively - doesnt seemt to work in ie8*/
-    .groupBy(rows,'telephone')
-    .sum("index")
-    .header()
-    .footer()
-
-  startTime = new Date
-
-  var projectedRows = aggregationBeforeFlattening
-    .flatten()
-
-  console.log('time taken to flatten ' + (projectedRows.length).toLocaleString() + ' rows', (startTime.getTime() - (new Date).getTime())/1000)
-
-
-  var start = 0
-  var virtualWindowSize = 10
-
-  //console.log(projectedRows)
-
-  ractive = new Ractive({
-    el  : document.querySelector('#container'),
-    debug : true,
-    twoway :false,
-    data : {
-      virtualRows : [],//the call to sliceData() will initialize this
-      //memoize : memoize,
-      frozenRows : [],
-      frozenColumns : [],
-      invisibleGroups : {},
-      columns : columns
-    }, 
-    partials : {
-      row : Templates.tableRow
-    },
-    template : Templates.table
-  })
-
-  function freeze(topNRows) {
-    ractive.set('frozenRows', ractive.get('virtualRows').slice(0,topNRows).map(function (row) { //i feel like this should go into aggregate-functions.js
-      return Object.create(row, {
-        __frozen__ : {
-          value: true,
-          writable: true,
-          enumerable: true,
-          configurable: true //ractive magic mode gets angry if this is false 
-        }
-      })
-    }))
-  }
-
-  function reflatten() {
-    projectedRows = aggregationBeforeFlattening
-      .flatten(ractive.get('invisibleGroups'))
-
-    sliceData(start, start+virtualWindowSize - ractive.get('frozenRows').length)
-  }
-
-  ractive.observe('invisibleGroups', function () {
-    reflatten()
-  })
-
-  ractive.observe('frozenRows', function () {
-    reflatten()
-  })
-  
-
-  //http://stackoverflow.com/a/11252120
-  function getElementScrollScale(domElement){
-    return domElement.scrollTop / (domElement.scrollHeight - domElement.clientHeight);
-  }
-  
-  ractive.on({
-    scrolling : function () {
-      var scrollScale = getElementScrollScale(virtualScrollPane)
-        , start = scrollScale * (rows.length - numberOfRowsToShow) //do i need to round this?
-        , end = start + numberOfRowsToShow
-        
-      sliceData(start,end)
-    },
-    wheel : function (e) {
-
-      var deltaY
-        , deltaX
-
-      if ('deltaY' in e.original) {
-        deltaY = e.original.deltaY
-        deltaX = e.original.deltaX
-      }
-      else if ('wheelDeltaY' in e.original ) {
-        deltaY = -1 * e.original.wheelDeltaY
-        deltaX = -1 * e.original.wheelDeltaX 
-      }
-      else { /* IE 8 */
-        deltaY = -1 * Math.floor(e.original.wheelDelta/120) 
-        deltaX = 0        
-      }
-
-      e.original.preventDefault()
-
-      // if (deltaY > 0) deltaY = 1    //need to tweak this 
-      // if (deltaY < 0) deltaY = -1
-      // if (deltaY === 0) return
-
-      if (start + deltaY < 0) {
-        start = 0
-      }
-      else if (start + virtualWindowSize + deltaY - ractive.get('frozenRows').length > projectedRows.length) {
-        start = projectedRows.length - virtualWindowSize - ractive.get('frozenRows').length
-      }
-      else {
-        start += deltaY
-      }
+    function reflatten() {
+      projectedRows = aggregationBeforeFlattening
+        .flatten(ractive.get('invisibleGroups'))
 
       sliceData(start, start+virtualWindowSize - ractive.get('frozenRows').length)
-    },
-    toggleGroupingVisibility : function (event) {
-      var group = event.context
-
-      ractive.toggle('invisibleGroups.' + group.key) //a bit of ractive keypath fun
-
-
     }
-  })
-  
-  
-  function sliceData(start,end) {
-    ractive.merge('virtualRows', projectedRows.slice(start,end))
-  }
-  
-  sliceData(start, virtualWindowSize)
-  
-</script>
+
+    ractive.observe('invisibleGroups', function () {
+      reflatten()
+    })
+
+    ractive.observe('frozenRows', function () {
+      reflatten()
+    })
+    
+
+    //http://stackoverflow.com/a/11252120
+    function getElementScrollScale(domElement){
+      return domElement.scrollTop / (domElement.scrollHeight - domElement.clientHeight);
+    }
+    
+    ractive.on({
+      scrolling : function () {
+        var scrollScale = getElementScrollScale(virtualScrollPane)
+          , start = scrollScale * (rows.length - numberOfRowsToShow) //do i need to round this?
+          , end = start + numberOfRowsToShow
+          
+        sliceData(start,end)
+      },
+      wheel : function (e) {
+
+        var deltaY
+          , deltaX
+
+        if ('deltaY' in e.original) {
+          deltaY = e.original.deltaY
+          deltaX = e.original.deltaX
+        }
+        else if ('wheelDeltaY' in e.original ) {
+          deltaY = -1 * e.original.wheelDeltaY
+          deltaX = -1 * e.original.wheelDeltaX 
+        }
+        else { /* IE 8 */
+          deltaY = -1 * Math.floor(e.original.wheelDelta/120) 
+          deltaX = 0        
+        }
+
+        e.original.preventDefault()
+
+        // if (deltaY > 0) deltaY = 1    //need to tweak this 
+        // if (deltaY < 0) deltaY = -1
+        // if (deltaY === 0) return
+
+        if (start + deltaY < 0) {
+          start = 0
+        }
+        else if (start + virtualWindowSize + deltaY - ractive.get('frozenRows').length > projectedRows.length) {
+          start = projectedRows.length - virtualWindowSize - ractive.get('frozenRows').length
+        }
+        else {
+          start += deltaY
+        }
+
+        sliceData(start, start+virtualWindowSize - ractive.get('frozenRows').length)
+      },
+      toggleGroupingVisibility : function (event) {
+        var group = event.context
+
+        ractive.toggle('invisibleGroups.' + group.key) //a bit of ractive keypath fun
+
+
+      }
+    })
+    
+    
+    function sliceData(start,end) {
+      ractive.merge('virtualRows', projectedRows.slice(start,end))
+    }
+    
+    sliceData(start, virtualWindowSize)
+    
+  </script>
 </body>
 </html>

@@ -2,8 +2,13 @@
   <table on-wheel='wheel' on-mousewheel='wheel'>
     <thead>
       <tr>
+
+        {{#frozenColumns}}
+        <th>kl{{.}}</th>
+        {{/frozenColumns}}
+
         {{#columns}}
-        <td>{{.}}</td>
+        <th>{{.}}</th>
         {{/columns}}
       </tr>
     </thead>

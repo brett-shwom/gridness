@@ -151,21 +151,25 @@ function copyJS(options) {
 
 function copyHTML(options) {
 
-    return function(event) {
+    return function (event) {
 
       gutil.log(gutil.colors.cyan('copying html'));
 
-      var fileNamePattern;
+      var fileNamePattern
+        , relative
 
       if (event) { //event is passed by gulp.watch. event.path will contain the path to the file that changed
-        fileNamePattern =  event.path;
+        fileNamePattern = event.path;
+        relative = require('path').relative(SRC, event.path)
+
+        gulp.src("**/*" + relative, { cwd : SRC }) //https://github.com/gulpjs/gulp/issues/151 --> It seems that gulp only preserves the directory structure of globs.
+            .pipe(gulp.dest(options.dest));
       }
       else {
         fileNamePattern = SRC + '/**/*.html'
+        gulp.src(fileNamePattern)
+            .pipe(gulp.dest(options.dest));
       }
-
-      gulp.src(fileNamePattern)
-        .pipe(gulp.dest(options.dest));
     }
 }
 
