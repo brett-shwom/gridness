@@ -8,14 +8,18 @@ MockData = (function () {
   function generateRows() {
     var rows = []
       , i
-    for (i=0; i< 100000; i++) {
+    for (i=0; i< 5000; i++) {
       rows.push({
         index : i,
         name : 'brett',
         address : '123 Main',
-        city : 'boston',
-        state : 'mass',
-        telephone : uniform('111-111-1111', '222-222-2222', '333-333-3333')
+        city : uniform('boston','nyc', 'philly'),
+        telephone : uniform('111-111-1111', '222-222-2222', '333-333-3333'),
+        age : Math.round(Math.random() * 50 + 5),
+        eyeColor : uniform('blue', 'green', 'hazel', 'brown'),
+        score : Math.round(Math.random() * 100),
+        awesome : uniform('yes', 'no', 'somewhat')
+
       })
     }
 
@@ -28,8 +32,11 @@ MockData = (function () {
       'name',
       'address',
       'city',
-      'state',
-      'telephone'
+      'telephone',
+      'age',
+      'eyeColor',
+      'score',
+      'awesome'
     ]
   }
 

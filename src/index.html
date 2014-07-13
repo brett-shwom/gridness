@@ -3,9 +3,11 @@
 <head>
 <link rel='stylesheet' href='cssreset-min.css' type='text/css'>
 <link rel='stylesheet' href='style.css' type='text/css'>
-<script src='ractive.js'></script>
+<script src='ractive-legacy.js'></script>
 <script src='aggregate-functions.js'></script>
 <script src='mock-data.js'></script>
+<script src='object.create-polyfill.js'></script>
+<script src='thenBy.js'></script>
 </head>
 <body>
 <script type='text/template' id='template'>
@@ -24,11 +26,8 @@
           {{>row}}
         {{/frozenRows}}
       
-        {{#virtualRows}} 
-
+        {{#virtualRows}}
           {{>row}}
-       
-        
         {{/virtualRows}}
 
       </tbody>
@@ -53,8 +52,11 @@
               <td>{{name}}</td>
               <td>{{address}}</td>
               <td>{{city}}</td>
-              <td>{{state}}</td> 
               <td>{{telephone}}</td>
+              <td>{{age}}</td>
+              <td>{{eyeColor}}</td>
+              <td>{{score}}</td>
+              <td>{{awesome}}</td>
             {{/.}}
         </tr>
 
@@ -79,7 +81,8 @@
 
   
   var aggregationBeforeFlattening = Aggregate //cache this + reflatten it every time an aggregation is hidden/shown -- flattening is cheap!
-    .groupBy(rows, 'telephone')
+    //.orderBy(rows, 'telephone') /*the more order bys, the longer -- maybe think about writing thenBy iteratively - doesnt seemt to work in ie8*/
+    .groupBy(rows,'telephone')
     .sum("index")
     .header()
     .footer()
@@ -111,8 +114,7 @@
     partials : {
       row : document.querySelector('#rowTemplate').innerHTML
     },
-    template : document.querySelector('#template').innerHTML,
-    magic : true
+    template : document.querySelector('#template').innerHTML
   })
 
   function freeze(topNRows) {
@@ -158,11 +160,20 @@
       sliceData(start,end)
     },
     wheel : function (e) {
-      console.log('wheel')
+
+      var deltaY
+        , deltaX
+
+      if (e.original.wheelDelta) {
+        deltaY = -1 * Math.floor(e.original.wheelDelta/120) /* IE 8 */
+        deltaX = 0
+      }
+      else {
+        deltaY = e.original.deltaY !== undefined ? e.original.deltaY : -1 * (e.original.wheelDeltaY)
+        deltaX = e.original.deltaX !== undefined ? e.original.deltaX : -1 * (e.original.wheelDeltaX)
+      }
 
 
-      var deltaY = e.original.deltaY !== undefined ? e.original.deltaY : -1 * (e.original.wheelDeltaY)
-      var deltaX = e.original.deltaX !== undefined ? e.original.deltaX : -1 * (e.original.wheelDeltaX)
 
 
       if (deltaY > 0) deltaY = 1
@@ -170,7 +181,7 @@
       if (deltaY === 0) return
 
       if (start + deltaY < 0) return
-      if (start + virtualWindowSize + deltaY > projectedRows.length - 1) return
+      if (start + virtualWindowSize + deltaY > projectedRows.length) return
 
       start += deltaY
 

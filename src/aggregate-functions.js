@@ -1,37 +1,54 @@
 Aggregate = (function () {
 
   var comparators = {
-    numeric : function (property) {
-      return function (a, b) {
-        if (a[property] < b[property])
-           return -1
-        if (a[property] > b[property])
-           return 1
-        return 0
-      }
+    numeric : function (property, a, b) {
+      if (a[property] < b[property])
+         return -1
+      if (a[property] > b[property])
+         return 1
+      return 0
     }
   }
 
-  function orderBy(data, property, dataType) {
+  function orderBy(data) {
+
     //at this point, this will only work on ungrouped data (grouped data has a different structure : [{key:key, data:{property1:val1,property2:val2}]...] vs [{property1:val1,property2:val2}...])
     
+    var properties = Array.prototype.slice.call(arguments, 1) //pass properties as rest arguments
+
     var comparator
 
 
-    switch (dataType) {
-      case 'string'  :
-      case 'numeric' : 
-      default        :
+    // switch (dataType) {
+    //   case 'string'  :
+    //   case 'numeric' : 
+    //   default        :
 
-        comparator = comparators.numeric(property)
-        break
-    }
+    var comparatorComposed = firstBy(function (c,d) {
+      return comparators.numeric(properties[0],c,d)
+    })
+
+    comparatorComposed = properties.slice(1).reduce(function(previous, current) {
+      return previous.thenBy(function (c,d) {
+        return comparators.numeric(current,c,d)
+      })
+    },comparatorComposed)
+
+        //comparator = comparators.numeric(property)
+    //    break
+    //}
 
     data = data.slice() //clone array (assumption is that data is in an array)
-
-    data.sort(comparator)
     
-    return data
+    data.sort(comparatorComposed)
+    
+    return Object.create(data, {
+      groupBy : {
+        value : function(property) {
+          return groupBy(this, property)
+        }
+      }
+    })
   } 
 
   function groupBy(data, property) {
