@@ -10,6 +10,22 @@ Aggregate = (function () {
     }
   }
 
+  // function enrichWithVirtualColumns(rows) {
+
+  //   var virtualColumns = {}
+
+  //   var newProto = Object.create({
+  //       virtualColumns : virtualColumns,
+  //       __proto__ : oldProto
+  //   })
+
+  //   rows = rows.map(function(row) {
+  //     row.__proto__ = newProto
+  //   })
+
+  //   return rows
+  // }
+
   function orderBy(data /* , rest parameters */) {
 
     //at this point, this will only work on ungrouped data (grouped data has a different structure : [{key:key, data:{property1:val1,property2:val2}]...] vs [{property1:val1,property2:val2}...])
@@ -19,7 +35,6 @@ Aggregate = (function () {
       , comparatorComposed
 
     if (properties.length > 0) { //if no order by properties are passed, just return the original data
-
 
       // switch (dataType) {
       //   case 'string'  :
@@ -195,7 +210,8 @@ Aggregate = (function () {
     orderBy : orderBy,
     sum : sum,
     groupBy: groupBy,
-    average : average
+    average : average//,
+    //enrichWithVirtualColumns : enrichWithVirtualColumns
   }
 
 })()

@@ -14,12 +14,12 @@
     </thead>
     <tbody>
 
-      {{#frozenRows}}
-        <tableRow row='{{.}}' virtualColumns='{{virtualColumns}}' />
+      {{#frozenRows}} 
+        {{>tableRow}}
       {{/frozenRows}}
     
       {{#virtualRows}}
-        <tableRow row='{{.}}' virtualColumns='{{virtualColumns}}' />
+        {{>tableRow}}
       {{/virtualRows}}
 
     </tbody>

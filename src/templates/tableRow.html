@@ -1,4 +1,3 @@
-{{#row}}
 {{# __type__ === 'header'}}
 
 
@@ -14,11 +13,12 @@
 
 <tr class='{{__frozenRow__ ? "frozenRow" : ""}}' >
   
-  {{#virtualColumns}}
+  {{# ({row : .}) }} <!--pass both the current row and virtual column to the partial - a somewhat hacky of passing a reference to both the frozen row and the current virtual Column -->
+    {{#virtualColumns}}
+    {{>tableCell}}
+    {{/virtualColumns}}
 
-    <tableCell row='{{row}}' column='{{.}}' /> <!-- there would be an issue if row were a property of virtualColums - chances seem low though -->
-
-  {{/virtualColumns}}
+  {{/ ({row : .}) }}
     
 </tr>
 
@@ -36,4 +36,3 @@
 
 {{/ __type__ === 'footer'}}
 
-{{/row}}
