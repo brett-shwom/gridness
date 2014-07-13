@@ -1,13 +1,13 @@
 <!DOCTYPE html>
 <html>
 <head>
-<link rel='stylesheet' href='cssreset-min.css' type='text/css'>
+<link rel='stylesheet' href='lib/cssreset-min.css' type='text/css'>
 <link rel='stylesheet' href='style.css' type='text/css'>
-<script src='ractive-legacy.js'></script>
+<script src='lib/ractive-legacy.js'></script>
 <script src='aggregate-functions.js'></script>
 <script src='mock-data.js'></script>
 <script src='object.create-polyfill.js'></script>
-<script src='thenBy.js'></script>
+<script src='lib/thenBy.js'></script>
 </head>
 <body>
 <script type='text/template' id='template'>
@@ -74,8 +74,6 @@
 
 <script >
 
-
-
   var rows = MockData.generateRows()
   var columns = MockData.generateColumns()
 
@@ -108,6 +106,7 @@
       virtualRows : [],//the call to sliceData() will initialize this
       //memoize : memoize,
       frozenRows : [],
+      frozenColumns : [],
       invisibleGroups : {},
       columns : columns
     }, 
@@ -164,51 +163,47 @@
       var deltaY
         , deltaX
 
-      if (e.original.wheelDelta) {
-        deltaY = -1 * Math.floor(e.original.wheelDelta/120) /* IE 8 */
-        deltaX = 0
+      if ('deltaY' in e.original) {
+        deltaY = e.original.deltaY
+        deltaX = e.original.deltaX
+      }
+      else if ('wheelDeltaY' in e.original ) {
+        deltaY = -1 * e.original.wheelDeltaY
+        deltaX = -1 * e.original.wheelDeltaX 
+      }
+      else { /* IE 8 */
+        deltaY = -1 * Math.floor(e.original.wheelDelta/120) 
+        deltaX = 0        
+      }
+
+      console.log(deltaX)
+
+      e.original.preventDefault()
+
+      // if (deltaY > 0) deltaY = 1    //need to tweak this 
+      // if (deltaY < 0) deltaY = -1
+      // if (deltaY === 0) return
+
+      if (start + deltaY < 0) {
+        start = 0
+      }
+      else if (start + virtualWindowSize + deltaY - ractive.get('frozenRows').length > projectedRows.length) {
+        start = projectedRows.length - virtualWindowSize - ractive.get('frozenRows').length
       }
       else {
-        deltaY = e.original.deltaY !== undefined ? e.original.deltaY : -1 * (e.original.wheelDeltaY)
-        deltaX = e.original.deltaX !== undefined ? e.original.deltaX : -1 * (e.original.wheelDeltaX)
+        start += deltaY
       }
 
-
-
-
-      if (deltaY > 0) deltaY = 1
-      if (deltaY < 0) deltaY = -1
-      if (deltaY === 0) return
-
-      if (start + deltaY < 0) return
-      if (start + virtualWindowSize + deltaY > projectedRows.length) return
-
-      start += deltaY
-
+      
 
       sliceData(start, start+virtualWindowSize - ractive.get('frozenRows').length)
     },
     toggleGroupingVisibility : function (event) {
-      console.log('tt')
       var group = event.context
 
       ractive.toggle('invisibleGroups.' + group.key) //a bit of ractive keypath fun
 
 
-    },
-    clicked : function (event) {
-
-     // Not working properly at the moment
-
-     // var y = event.original.offsetY - ractive.find('.virtual-scroll-pane').scrollTop
-     // var x = event.original.offsetX
-     
-     // var evt = document.createEvent('MouseEvent');
-     //    evt.initMouseEvent('click', true, true, window, 0, screenX, screenY, x, y, true, false, false, true, 0, null);
-
-     
-     // ractive.find('.table-container table')
-     
     }
   })
   
