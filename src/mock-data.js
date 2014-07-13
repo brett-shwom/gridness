@@ -8,7 +8,7 @@ MockData = (function () {
   function generateRows() {
     var rows = []
       , i
-    for (i=0; i< 100; i++) {
+    for (i=0; i< 1000000; i++) {
       rows.push({
         index : i,
         name : 'brett',
@@ -18,7 +18,8 @@ MockData = (function () {
         age : Math.round(Math.random() * 50 + 5),
         eyeColor : uniform('blue', 'green', 'hazel', 'brown'),
         score : Math.round(Math.random() * 100),
-        awesome : uniform('yes', 'no', 'somewhat')
+        awesome : uniform('yes', 'no', 'somewhat'),
+        bloodType : uniform('A', 'B', 'O')
 
       })
     }
@@ -36,7 +37,8 @@ MockData = (function () {
       'age',
       'eyeColor',
       'score',
-      'awesome'
+      'awesome',
+      'bloodType'
     ]
   }
 

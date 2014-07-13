@@ -1,7 +1,7 @@
 {{# __type__ === 'header'}}
 
 
-<tr style='background-color:green; cursor:pointer;' class='{{__frozenRow__ ? "frozenRow" : ""}}' on-click='toggleGroupingVisibility' data-key='{{key}}'>
+<tr style='background-color:green; cursor:pointer;' class='{{frozenRow ? "frozenRow" : ""}}' on-click='toggleGroupingVisibility' data-key='{{key}}'>
   <td>Key : {{key}}</td>
 </tr>
 
@@ -11,15 +11,25 @@
 {{# __type__ === undefined }} <!--undefined === a piece of data - pretty counter-intuitive-->
 
 
-<tr class='{{__frozenRow__ ? "frozenRow" : ""}}' >
+<tr class='{{frozenRow ? "frozenRow" : ""}}' >
   
   {{# ({row : .}) }} <!--pass both the current row and virtual column to the partial - a somewhat hacky of passing a reference to both the frozen row and the current virtual Column -->
+
+    {{# ({frozenColumn : true}) }} <!-- pattern for adding info to the context-->
+    {{#frozenColumns}}
+    
+    {{>tableCell}}
+    
+    {{/frozenColumns}}
+    {{/ ({frozenColumn : true}) }}
+
     {{#virtualColumns}}
     {{>tableCell}}
     {{/virtualColumns}}
 
+
   {{/ ({row : .}) }}
-    
+
 </tr>
 
 

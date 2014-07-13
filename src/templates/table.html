@@ -4,7 +4,7 @@
       <tr>
 
         {{#frozenColumns}}
-        <th>{{.}}</th>
+        <th class='frozenColumn'>{{.}}</th>
         {{/frozenColumns}}
 
         {{#virtualColumns}}
@@ -14,9 +14,13 @@
     </thead>
     <tbody>
 
+      {{# ({frozenRow : true}) }}
+
       {{#frozenRows}} 
         {{>tableRow}}
       {{/frozenRows}}
+
+      {{/ ({frozenRow: true}) }}
     
       {{#virtualRows}}
         {{>tableRow}}

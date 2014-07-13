@@ -87,16 +87,7 @@
     })
 
     function freezeRows(topNRows) {
-      ractive.set('frozenRows', ractive.get('virtualRows').slice(0,topNRows).map(function (row) { //i feel like this should go into aggregate-functions.js
-        return Object.create(row, {
-          __frozenRow__ : {
-            value: true,
-            writable: true,
-            enumerable: true,
-            configurable: true //ractive magic mode gets angry if this is false 
-          }
-        })
-      }))
+      ractive.set('frozenRows', ractive.get('virtualRows').slice(0,topNRows))
     }
 
 
