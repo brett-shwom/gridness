@@ -2,6 +2,7 @@
 body {
  font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif; 
  font-weight: 300;
+ overflow:hidden;
 }
 
 table {
@@ -11,6 +12,9 @@ table {
 
 tr {
  height:20px;
+ &.frozen {
+  background-color:red !important
+ }
 }
 
 td {
@@ -35,6 +39,7 @@ tbody {
   
   position:relative;
   width:600px;
+
   height:$numberOfRowsToShow * $rowHeight + $headerHeight;
 
   table {

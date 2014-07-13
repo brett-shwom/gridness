@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
+<link rel='stylesheet' href='cssreset-min.css' type='text/css'>
 <link rel='stylesheet' href='style.css' type='text/css'>
 <script src='ractive.js'></script>
 <script src='aggregate-functions.js'></script>
@@ -8,8 +9,8 @@
 </head>
 <body>
 <script type='text/template' id='template'>
-  <div class='table-container'>
-    <table on-wheel='wheel'>
+  <div class='table-container' >
+    <table on-wheel='wheel' on-mousewheel='wheel'>
       <thead>
         <tr>
           {{#columns}}
@@ -18,12 +19,27 @@
         </tr>
       </thead>
       <tbody>
-      
-        {{#virtualRows}}
 
+        {{#frozenRows}}
+          {{>row}}
+        {{/frozenRows}}
+      
+        {{#virtualRows}} 
+
+          {{>row}}
+       
+        
+        {{/virtualRows}}
+
+      </tbody>
+    </table>
+
+  </div>
+</script>
+<script type='text/template' id='rowTemplate'>
         {{# __type__ === 'header'}}
 
-        <tr style='background-color:green; cursor:pointer;' on-click='toggleGroupingVisibility' data-key='{{key}}'>
+        <tr style='background-color:green; cursor:pointer;' class='{{__frozen__ ? "frozen" : ""}}' on-click='toggleGroupingVisibility' data-key='{{key}}'>
           <td>Key : {{key}}</td>
         </tr>
 
@@ -31,7 +47,7 @@
         
         {{# __type__ === undefined }}
 
-        <tr>
+        <tr class='{{__frozen__ ? "frozen" : ""}}' >
             {{#.}}
               <td>{{index}}</td>
               <td>{{name}}</td>
@@ -50,47 +66,19 @@
         <tr><td>Sum</td><td>{{sum['index']}}</td></tr>
 
         {{/ __type__ === 'footer'}}
-       
-        
-        {{/virtualRows}}
-
-      </tbody>
-    </table>
-
-  </div>
 </script>
 
 <div id='container'></div>
 
-<script data-scratchpad-rerender>
+<script >
 
 
 
   var rows = MockData.generateRows()
   var columns = MockData.generateColumns()
 
-  // function memoize(f) {
-
-  //   //watch out for memoized parameters remaining in memory....
-
-  //   var lookupTable = {}
-
-  //   return function () {
-  //     if (arguments.length === 0) {
-  //       f.apply(this, arguments)
-  //     }
-  //     else if (arguments.length === 1) {
-  //       if (arguments[0] in lookupTable) {
-  //         return lookupTable[arguments[0]]
-  //       }
-  //     }
-  //   }
-
-  // }
-
-
   
-  var aggregationBeforeFlattening = Aggregate
+  var aggregationBeforeFlattening = Aggregate //cache this + reflatten it every time an aggregation is hidden/shown -- flattening is cheap!
     .groupBy(rows, 'telephone')
     .sum("index")
     .header()
@@ -101,7 +89,7 @@
   var projectedRows = aggregationBeforeFlattening
     .flatten()
 
-  console.log((startTime.getTime() - (new Date).getTime())/1000)
+  console.log('time taken to flatten ' + (projectedRows.length).toLocaleString() + ' rows', (startTime.getTime() - (new Date).getTime())/1000)
 
 
   var start = 0
@@ -116,18 +104,43 @@
     data : {
       virtualRows : [],//the call to sliceData() will initialize this
       //memoize : memoize,
+      frozenRows : [],
       invisibleGroups : {},
       columns : columns
     }, 
+    partials : {
+      row : document.querySelector('#rowTemplate').innerHTML
+    },
     template : document.querySelector('#template').innerHTML,
     magic : true
   })
 
-  ractive.observe('invisibleGroups', function () {
+  function freeze(topNRows) {
+    ractive.set('frozenRows', ractive.get('virtualRows').slice(0,topNRows).map(function (row) { //i feel like this should go into aggregate-functions.js
+      return Object.create(row, {
+         __frozen__ : {
+                  value: true,
+                  writable: true,
+                  enumerable: true,
+                  configurable: true //ractive magic mode gets angry if this is false 
+            }
+      })
+    }))
+  }
+
+  function reflatten() {
     projectedRows = aggregationBeforeFlattening
       .flatten(ractive.get('invisibleGroups'))
 
-    sliceData(start, start+virtualWindowSize)
+    sliceData(start, start+virtualWindowSize - ractive.get('frozenRows').length)
+  }
+
+  ractive.observe('invisibleGroups', function () {
+    reflatten()
+  })
+
+  ractive.observe('frozenRows', function () {
+    reflatten()
   })
   
 
@@ -145,12 +158,12 @@
       sliceData(start,end)
     },
     wheel : function (e) {
+      console.log('wheel')
 
-      e.original.preventDefault()
-      e.original.stopPropagation()
 
-      var deltaY = e.original.deltaY
-      var deltaX = e.original.deltaX
+      var deltaY = e.original.deltaY !== undefined ? e.original.deltaY : -1 * (e.original.wheelDeltaY)
+      var deltaX = e.original.deltaX !== undefined ? e.original.deltaX : -1 * (e.original.wheelDeltaX)
+
 
       if (deltaY > 0) deltaY = 1
       if (deltaY < 0) deltaY = -1
@@ -162,7 +175,7 @@
       start += deltaY
 
 
-      sliceData(start, start+virtualWindowSize)
+      sliceData(start, start+virtualWindowSize - ractive.get('frozenRows').length)
     },
     toggleGroupingVisibility : function (event) {
       console.log('tt')
