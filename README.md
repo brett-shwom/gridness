@@ -24,3 +24,8 @@ The kitchen sink example demonstrates the following functionality:
 
 Concepts
 ================
+
+- Virtual Columns
+- Virtual Rows
+- Frozen Columns
+- Frozen Rows
