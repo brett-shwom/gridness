@@ -60,20 +60,14 @@
     var ractive = new Ractive({
       el  : document.querySelector('#container'),
       debug : true,
-      twoway :false,
+      twoway :false, //im not sure why this is set to false -- get rid of it probably (test on IE 8 first though)
       data : {
         virtualRows : [],//the call to sliceData() will initialize this
         //memoize : memoize,
         frozenRows : [],
         invisibleGroups : {},
         virtualColumns : virtualColumns,
-        frozenColumns : [],
-        rowAndVirtualColumns : function(row, virtualColumns) {
-          return {
-            row : row,
-            virtualColumns : virtualColumns
-          }
-        }
+        frozenColumns : []
       },
       // components : {
       //   tableCell : Components.tableCell,

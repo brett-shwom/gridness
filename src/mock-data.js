@@ -8,7 +8,7 @@ MockData = (function () {
   function generateRows() {
     var rows = []
       , i
-    for (i=0; i< 1000000; i++) {
+    for (i=0; i< 1000; i++) {
       rows.push({
         index : i,
         name : 'brett',
