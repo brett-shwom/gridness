@@ -1,0 +1,23 @@
+<div class='table-container' >
+  <table on-wheel='wheel' on-mousewheel='wheel'>
+    <thead>
+      <tr>
+        {{#columns}}
+        <td>{{.}}</td>
+        {{/columns}}
+      </tr>
+    </thead>
+    <tbody>
+
+      {{#frozenRows}}
+        {{>row}}
+      {{/frozenRows}}
+    
+      {{#virtualRows}}
+        {{>row}}
+      {{/virtualRows}}
+
+    </tbody>
+  </table>
+
+</div>

@@ -6,73 +6,31 @@
 <script src='lib/ractive-legacy.js'></script>
 <script src='aggregate-functions.js'></script>
 <script src='mock-data.js'></script>
-<script src='object.create-polyfill.js'></script>
+<script src='helpers/object.create-polyfill.js'></script>
 <script src='lib/thenBy.js'></script>
+<script src='helpers/xhrRequest.js'></script>
 </head>
 <body>
 <script type='text/template' id='template'>
-  <div class='table-container' >
-    <table on-wheel='wheel' on-mousewheel='wheel'>
-      <thead>
-        <tr>
-          {{#columns}}
-          <td>{{.}}</td>
-          {{/columns}}
-        </tr>
-      </thead>
-      <tbody>
-
-        {{#frozenRows}}
-          {{>row}}
-        {{/frozenRows}}
-      
-        {{#virtualRows}}
-          {{>row}}
-        {{/virtualRows}}
-
-      </tbody>
-    </table>
-
-  </div>
+  
 </script>
 <script type='text/template' id='rowTemplate'>
-        {{# __type__ === 'header'}}
 
-        <tr style='background-color:green; cursor:pointer;' class='{{__frozen__ ? "frozen" : ""}}' on-click='toggleGroupingVisibility' data-key='{{key}}'>
-          <td>Key : {{key}}</td>
-        </tr>
-
-        {{/ __type__ === 'header' }}
-        
-        {{# __type__ === undefined }}
-
-        <tr class='{{__frozen__ ? "frozen" : ""}}' >
-            {{#.}}
-              <td>{{index}}</td>
-              <td>{{name}}</td>
-              <td>{{address}}</td>
-              <td>{{city}}</td>
-              <td>{{telephone}}</td>
-              <td>{{age}}</td>
-              <td>{{eyeColor}}</td>
-              <td>{{score}}</td>
-              <td>{{awesome}}</td>
-            {{/.}}
-        </tr>
-
-        {{/ __type__ === undefined}}
-      
-
-        {{# __type__ === 'footer'}}
-        
-        <tr><td>Sum</td><td>{{sum['index']}}</td></tr>
-
-        {{/ __type__ === 'footer'}}
 </script>
 
 <div id='container'></div>
 
 <script >
+  
+  //avoiding a more complicated build process at this point
+  //replate this later with template concatenation in the build process
+
+  var Templates = (function () {
+    return {
+      table    : getSync('templates/table.html'),
+      tableRow : getSync('templates/tableRow.html')
+    }
+  })()
 
   var rows = MockData.generateRows()
   var columns = MockData.generateColumns()
@@ -111,20 +69,20 @@
       columns : columns
     }, 
     partials : {
-      row : document.querySelector('#rowTemplate').innerHTML
+      row : Templates.tableRow
     },
-    template : document.querySelector('#template').innerHTML
+    template : Templates.table
   })
 
   function freeze(topNRows) {
     ractive.set('frozenRows', ractive.get('virtualRows').slice(0,topNRows).map(function (row) { //i feel like this should go into aggregate-functions.js
       return Object.create(row, {
-         __frozen__ : {
-                  value: true,
-                  writable: true,
-                  enumerable: true,
-                  configurable: true //ractive magic mode gets angry if this is false 
-            }
+        __frozen__ : {
+          value: true,
+          writable: true,
+          enumerable: true,
+          configurable: true //ractive magic mode gets angry if this is false 
+        }
       })
     }))
   }
@@ -176,8 +134,6 @@
         deltaX = 0        
       }
 
-      console.log(deltaX)
-
       e.original.preventDefault()
 
       // if (deltaY > 0) deltaY = 1    //need to tweak this 
@@ -193,8 +149,6 @@
       else {
         start += deltaY
       }
-
-      
 
       sliceData(start, start+virtualWindowSize - ractive.get('frozenRows').length)
     },
