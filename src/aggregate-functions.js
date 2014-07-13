@@ -44,11 +44,91 @@ Aggregate = (function () {
       else {
        groupings[dataPoint[property]].data.push(dataPoint) 
       }
+
     })
+
     
-    return Object.keys(groupings).map(function(key) { //optimize me
+    var groupingsAsArray = Object.keys(groupings).map(function(key) {
       return groupings[key]
     })
+
+    groupingsAsArray.sum = function (field) {
+
+      groupingsAsArray.forEach(function (grouping) {
+        grouping.sum = grouping.sum || {}
+        grouping.sum[field] = sum(grouping, field)
+      })
+      return this
+    }
+
+    groupingsAsArray.average = function (field) {
+      groupingsAsArray.forEach(function (grouping) {
+        grouping.average = grouping.average || {}
+        grouping.average[field] = average(grouping, field)
+      })
+      return this
+    }
+
+    groupingsAsArray.count = function (field) {
+      groupingsAsArray.forEach(function (grouping) {
+        grouping.count = grouping.data.length
+      })
+      return this
+    }
+
+    groupingsAsArray.header = function (field) {
+      groupingsAsArray.forEach(function (grouping) {
+        grouping.header = true
+      })
+      return this
+    }
+
+    groupingsAsArray.footer = function (field) {
+      groupingsAsArray.forEach(function (grouping) {
+        grouping.footer = true
+      })
+      return this
+    }
+
+    groupingsAsArray.flatten = function (hiddenGroups) {
+      var flattenedArray = []
+        , hiddenGroups = hiddenGroups || {}
+
+      groupingsAsArray.forEach(function (grouping) {
+
+
+        if (grouping.header) {
+          flattenedArray.push(Object.create(grouping, {
+            __type__ : {
+                  value: 'header',
+                  writable: true,
+                  enumerable: true,
+                  configurable: true //ractive magic mode gets angry if this is false 
+            }
+          }))
+        }
+
+        if(hiddenGroups[grouping.key]) return //header will still be included
+
+        flattenedArray = flattenedArray.concat(grouping.data) //TODO this needs to be recursive
+
+        if (grouping.footer) {
+          flattenedArray.push(Object.create(grouping, {
+            __type__ : {
+                  value: 'footer',
+                  writable: true,
+                  enumerable: true,
+                  configurable: true 
+            }
+          }))
+        }
+
+
+      })
+      return flattenedArray
+    }
+
+    return groupingsAsArray
   } 
 
   function sum(groupedByData, field) { 
@@ -56,6 +136,9 @@ Aggregate = (function () {
       assume the following data structure:
       
       [{key: key, data : [datapoint1,datapoint2]}]
+
+      enriches the groupedByData object with a property : 'sum'
+
     */
 
     var theSum = groupedByData.data.reduce(function (previous, datapoint) {
@@ -74,30 +157,21 @@ Aggregate = (function () {
       [{key: key, data : [datapoint1,datapoint2]}]
     */
 
-    var theSum = groupedByData.data.reduce(function (previous, datapoint) {
+    var theAverage = groupedByData.data.reduce(function (previous, datapoint) {
       return previous + datapoint[field]
-    },0)
+    },0) / groupedByData.data.length
 
     
-    return theSum / groupedByData.data.length
+    return theAverage
     
   }
 
-  function count(groupedByData) { 
-    /*
-      assume the following data structure:
-      
-      [{key: key, data : [datapoint1,datapoint2]}]
-    */
-    
-    return groupedByData.data.length
-    
-  }
+
+
 
 
   return {
     orderBy : orderBy,
-    count : count,
     sum : sum,
     groupBy: groupBy,
     average : average

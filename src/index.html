@@ -9,7 +9,7 @@
 <body>
 <script type='text/template' id='template'>
   <div class='table-container'>
-    <table>
+    <table on-wheel='wheel'>
       <thead>
         <tr>
           {{#columns}}
@@ -19,14 +19,18 @@
       </thead>
       <tbody>
       
-        {{#Aggregate.groupBy(rows,"telephone")}}
-        <tr style='background-color:green; cursor:pointer;' on-click='toggleGroupingVisibility'>
-          <td>{{key}}</td>
+        {{#virtualRows}}
+
+        {{# __type__ === 'header'}}
+
+        <tr style='background-color:green; cursor:pointer;' on-click='toggleGroupingVisibility' data-key='{{key}}'>
+          <td>Key : {{key}}</td>
         </tr>
+
+        {{/ __type__ === 'header' }}
         
-        {{#!invisibleGroups[key]}}
-        {{#data}}
-        <!--{{#rowsInView}}-->
+        {{# __type__ === undefined }}
+
         <tr>
             {{#.}}
               <td>{{index}}</td>
@@ -37,19 +41,22 @@
               <td>{{telephone}}</td>
             {{/.}}
         </tr>
-        {{/data}}
-        {{/!invisibleGroups[key]}}
 
+        {{/ __type__ === undefined}}
+      
+
+        {{# __type__ === 'footer'}}
         
-        <tr><td>{{Aggregate.sum(.,"index")}}</td></tr>
+        <tr><td>Sum</td><td>{{sum['index']}}</td></tr>
+
+        {{/ __type__ === 'footer'}}
+       
         
-        <!--{{/rowsInView}}-->
-        {{/Aggregate.groupBy(rows,"telephone")}}
+        {{/virtualRows}}
+
       </tbody>
     </table>
-    <!--<div class='virtual-scroll-pane' on-scroll='scrolling' on-click='clicked'>
-      <div class='virtual-content' style='height:{{virtualScrollPane.virtualContent.height}}px;'></div>
-    </div>--><!--commented out while i figure out how to deal with sending click events through the virtual-scroll-pane-->
+
   </div>
 </script>
 
@@ -57,33 +64,73 @@
 
 <script data-scratchpad-rerender>
 
-  var rowHeight = 20 //needs to be kept in sync with the css <tr> height
-    , headerHeight = rowHeight
-    , numberOfRowsToShow = 20
+
 
   var rows = MockData.generateRows()
   var columns = MockData.generateColumns()
 
+  // function memoize(f) {
+
+  //   //watch out for memoized parameters remaining in memory....
+
+  //   var lookupTable = {}
+
+  //   return function () {
+  //     if (arguments.length === 0) {
+  //       f.apply(this, arguments)
+  //     }
+  //     else if (arguments.length === 1) {
+  //       if (arguments[0] in lookupTable) {
+  //         return lookupTable[arguments[0]]
+  //       }
+  //     }
+  //   }
+
+  // }
+
+
+  
+  var aggregationBeforeFlattening = Aggregate
+    .groupBy(rows, 'telephone')
+    .sum("index")
+    .header()
+    .footer()
+
+  startTime = new Date
+
+  var projectedRows = aggregationBeforeFlattening
+    .flatten()
+
+  console.log((startTime.getTime() - (new Date).getTime())/1000)
+
+
+  var start = 0
+  var virtualWindowSize = 10
+
+  //console.log(projectedRows)
 
   ractive = new Ractive({
     el  : document.querySelector('#container'),
+    debug : true,
+    twoway :false,
     data : {
-      Aggregate : Aggregate,
-      rows : rows,
+      virtualRows : [],//the call to sliceData() will initialize this
+      //memoize : memoize,
       invisibleGroups : {},
-      rowsInView : [], //the call to sliceData() will initialize this
-      columns : columns,
-      virtualScrollPane : {
-        virtualContent : { 
-          height : rowHeight * rows.length + headerHeight
-        }
-      }
+      columns : columns
     }, 
-    template : document.querySelector('#template').innerHTML
+    template : document.querySelector('#template').innerHTML,
+    magic : true
+  })
+
+  ractive.observe('invisibleGroups', function () {
+    projectedRows = aggregationBeforeFlattening
+      .flatten(ractive.get('invisibleGroups'))
+
+    sliceData(start, start+virtualWindowSize)
   })
   
-  var virtualScrollPane = ractive.find('.virtual-scroll-pane')
-  
+
   //http://stackoverflow.com/a/11252120
   function getElementScrollScale(domElement){
     return domElement.scrollTop / (domElement.scrollHeight - domElement.clientHeight);
@@ -97,11 +144,32 @@
         
       sliceData(start,end)
     },
+    wheel : function (e) {
+
+      e.original.preventDefault()
+      e.original.stopPropagation()
+
+      var deltaY = e.original.deltaY
+      var deltaX = e.original.deltaX
+
+      if (deltaY > 0) deltaY = 1
+      if (deltaY < 0) deltaY = -1
+      if (deltaY === 0) return
+
+      if (start + deltaY < 0) return
+      if (start + virtualWindowSize + deltaY > projectedRows.length - 1) return
+
+      start += deltaY
+
+
+      sliceData(start, start+virtualWindowSize)
+    },
     toggleGroupingVisibility : function (event) {
       console.log('tt')
       var group = event.context
 
       ractive.toggle('invisibleGroups.' + group.key) //a bit of ractive keypath fun
+
 
     },
     clicked : function (event) {
@@ -122,10 +190,10 @@
   
   
   function sliceData(start,end) {
-    ractive.merge('rowsInView', rows.slice(start,end))
+    ractive.merge('virtualRows', projectedRows.slice(start,end))
   }
   
-  sliceData(0,numberOfRowsToShow)
+  sliceData(start, virtualWindowSize)
   
 </script>
 </body>
