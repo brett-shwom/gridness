@@ -12,7 +12,7 @@ if (typeof Object.create != 'function') {
             F.prototype = o;
             var f = new F();
 
-
+            //I added the following code to support property descriptors with a value property
             var property
 
             if (descriptor){
