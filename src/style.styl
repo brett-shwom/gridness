@@ -1,7 +1,11 @@
 /* http://css-tricks.com/snippets/css/better-helvetica/ */
 body {
+ /*
  font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif; 
  font-weight: 400;
+ */
+ font-weight:200;
+ font-family: 'Ek Mukta', sans-serif;
  overflow:hidden;
 }
 
@@ -17,10 +21,14 @@ tr {
  }
 }
 
-td,th {
- border: 1px solid black;
+td {
  padding-left:2px;
  padding-right:2px;
+}
+
+td,th {
+
+ border: 1px solid black;
  width:100px;
  white-space:nowrap;
  text-overflow:ellipsis;
@@ -29,6 +37,12 @@ td,th {
   background-color red
  }
 
+}
+
+th {
+  padding-left 10px
+  padding-right 10px
+  text-align center
 }
 
 tbody {
