@@ -32,13 +32,24 @@
       throw 'must provide an el'
     }
 
+    if (!options.rows) {
+      throw 'must provide rows'
+    }
+
+    if (!options.columns) {
+      throw 'must provide columns'
+    }
+
     var start = 0
       , virtualWindowSize = options.virtualWindowSize || 10
       , projectedRows
+      , rows = options.rows
+      , columns = options.columns
       , virtualColumns = columns //mutate me later once we start virtualizing columns
       , ractive
       , Templates
       , aggregationBeforeFlattening
+
 
     Templates = (function () {
       return {
@@ -161,12 +172,12 @@
 
     ractive.observe('invisibleGroups', function () {
       reflatten()
-    }, {init :false } ) //init : false --> prevents reflatten() from being called on initial load
+    }, { init :false } ) //init : false --> prevents reflatten() from being called on initial load
 
     ractive.observe('frozenRows', function () {
       console.log('frozen rows changed ')
       reflatten()
-    }, {init:false}) //init : false --> prevents reflatten() from being called on initial load
+    }, { init:false } ) //init : false --> prevents reflatten() from being called on initial load
 
     sliceData(start, virtualWindowSize)
 
