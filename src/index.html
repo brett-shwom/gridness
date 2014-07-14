@@ -23,24 +23,28 @@
     //avoiding a more complicated build process at this point
     //replate this later with template concatenation in the build process
 
-    var rows = MockData.generateRows()
-      , columns = MockData.generateColumns()
-      , gridness
+    (function () {
 
-    gridness = new Gridness({
-      rows : rows,
-      columns : columns,
-      virtualWindowSize : 10,
-      el : document.querySelector('#container'),
-      getAggregationBeforeFlattening : function () {
-        return Aggregate //cache this + reflatten it every time an aggregation is hidden/shown -- flattening is cheap!
-          //.orderBy(rows, 'telephone') /*the more order bys, the longer -- maybe think about writing thenBy iteratively - doesnt seemt to work in ie8*/
-          .groupBy(rows,'telephone')
-          .sum("index")
-          .header()
-          .footer()
-      }
-    })
+      var rows = MockData.generateRows()
+        , columns = MockData.generateColumns()
+        , gridness
+
+      gridness = new Gridness({
+        rows : rows,
+        columns : columns,
+        virtualWindowSize : 10,
+        el : document.querySelector('#container'),
+        getAggregationBeforeFlattening : function () {
+          return Aggregate //cache this + reflatten it every time an aggregation is hidden/shown -- flattening is cheap!
+            //.orderBy(rows, 'telephone') /*the more order bys, the longer -- maybe think about writing thenBy iteratively - doesnt seemt to work in ie8*/
+            .groupBy(rows,'telephone')
+            .sum("index")
+            .header()
+            .footer()
+        }
+      })
+
+    })()
 
     
   </script>
