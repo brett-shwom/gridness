@@ -146,7 +146,14 @@ Aggregate = (function () {
 
         if(hiddenGroups[grouping.key]) return //header will still be included
 
-        flattenedArray = flattenedArray.concat(grouping.data) //TODO this needs to be recursive
+        var i
+
+        for(i=0;i<grouping.data.length;i++) {
+          flattenedArray.push(grouping.data[i])
+        }
+
+        //flattenedArray = flattenedArray.concat(grouping.data) //TODO this needs to be recursive
+        //concat is much much slower than the above for loop - also check out http://jsperf.com/array-concat-vs-push-2/13
 
         if (grouping.footer) {
           flattenedArray.push(Object.create(grouping, {
