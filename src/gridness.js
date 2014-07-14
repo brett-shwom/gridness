@@ -81,6 +81,7 @@
     }
 
     function reflatten() {
+
       projectedRows = aggregationBeforeFlattening
         .flatten(ractive.get('invisibleGroups'))
 
@@ -160,14 +161,20 @@
 
     ractive.observe('invisibleGroups', function () {
       reflatten()
-    })
+    }, {init :false } ) //init : false --> prevents reflatten() from being called on initial load
 
     ractive.observe('frozenRows', function () {
       console.log('frozen rows changed ')
       reflatten()
-    })
+    }, {init:false}) //init : false --> prevents reflatten() from being called on initial load
 
     sliceData(start, virtualWindowSize)
+
+    return {
+      freezeRows : freezeRows,
+      freezeColumns : freezeColumns,
+      ractive : ractive
+    }
 
   }
 }))

@@ -24,10 +24,10 @@
     //replate this later with template concatenation in the build process
 
     var rows = MockData.generateRows()
-    var columns = MockData.generateColumns()
+      , columns = MockData.generateColumns()
+      , gridness
 
-
-    new Gridness({
+    gridness = new Gridness({
       rows : rows,
       columns : columns,
       virtualWindowSize : 10,
