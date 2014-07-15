@@ -1,5 +1,7 @@
 Aggregate = (function () {
 
+  //I might be using 'property' and 'field' interchangeably in this file
+
   var comparators = {
     numeric : function (property, a, b) {
       if (a[property] < b[property])
@@ -90,7 +92,7 @@ Aggregate = (function () {
 
     groupingsAsArray.sum = function (field) {
 
-      groupingsAsArray.forEach(function (grouping) {
+      this.forEach(function (grouping) {
         grouping.sum = grouping.sum || {}
         grouping.sum[field] = sum(grouping, field)
       })
@@ -98,7 +100,7 @@ Aggregate = (function () {
     }
 
     groupingsAsArray.average = function (field) {
-      groupingsAsArray.forEach(function (grouping) {
+      this.forEach(function (grouping) {
         grouping.average = grouping.average || {}
         grouping.average[field] = average(grouping, field)
       })
@@ -106,21 +108,25 @@ Aggregate = (function () {
     }
 
     groupingsAsArray.count = function (field) {
-      groupingsAsArray.forEach(function (grouping) {
+      this.forEach(function (grouping) {
         grouping.count = grouping.data.length
       })
       return this
     }
 
+    groupingsAsArray.groupBy = function(field) {
+      return groupBy(this, field)
+    }
+
     groupingsAsArray.header = function (field) {
-      groupingsAsArray.forEach(function (grouping) {
+      this.forEach(function (grouping) {
         grouping.header = true
       })
       return this
     }
 
     groupingsAsArray.footer = function (field) {
-      groupingsAsArray.forEach(function (grouping) {
+      this.forEach(function (grouping) {
         grouping.footer = true
       })
       return this
@@ -130,7 +136,7 @@ Aggregate = (function () {
       var flattenedArray = []
         , hiddenGroups = hiddenGroups || {}
 
-      groupingsAsArray.forEach(function (grouping) {
+      this.forEach(function (grouping) {
 
 
         if (grouping.header) {
@@ -219,3 +225,7 @@ Aggregate = (function () {
   }
 
 })()
+
+if (eval('module') && module.exports) { //expose Aggregate to node for testing
+  module.exports = Aggregate
+}

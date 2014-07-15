@@ -6,7 +6,7 @@
   <link href='http://fonts.googleapis.com/css?family=Ek+Mukta:200,400' rel='stylesheet' type='text/css'>
   <link rel='stylesheet' href='style.css' type='text/css'>
   <script src='lib/ractive-legacy.js'></script>
-  <script src='aggregate-functions.js'></script>
+  <script src='aggregate.js'></script>
   <script src='mock-data.js'></script>
   <script src='helpers/object.create-polyfill.js'></script>
   <script src='lib/thenBy.js'></script>
@@ -37,10 +37,15 @@
         getAggregationBeforeFlattening : function () {
           return Aggregate //cache this + reflatten it every time an aggregation is hidden/shown -- flattening is cheap!
             //.orderBy(rows, 'telephone') /*the more order bys, the longer -- maybe think about writing thenBy iteratively - doesnt seemt to work in ie8*/
-            .groupBy(rows,'score')
+            .orderBy(rows, 'telephone')
+            .groupBy('score') //TODO rows is kind of oddly defined in this closure...
             .sum("index")
             .header()
             .footer()
+              .groupBy('telephone')
+              .sum('index')
+              .header()
+              .footer()
         }
       })
 

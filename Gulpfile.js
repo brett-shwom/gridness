@@ -1,10 +1,15 @@
 var gulp = require('gulp')
   , stylus = require('gulp-stylus')
   , gutil = require("gulp-util")
+  , mocha = require('gulp-mocha')
+
+require('coffee-script/register') //for coffeescript support with mocha. see --> https://github.com/sindresorhus/gulp-mocha#coffeescript
+
 
 var EXPRESS_PORT = 9000
   , SRC = './src'
   , BUILD_OUTPUT = __dirname + '/dest'
+  , TEST_DIR = __dirname + '/test'
   , EXPRESS_ROOT = BUILD_OUTPUT
   , LIVERELOAD_PORT = 35729
 
@@ -173,6 +178,11 @@ function copyHTML(options) {
     }
 }
 
+function runTests() {
+  return gulp.src(TEST_DIR + '/**/*.{js,coffee}', {read: false})
+    .pipe(mocha({reporter: 'nyan'}));
+}
+
 
 gulp.task('build', function () {
   buildStylus({dest : BUILD_OUTPUT})()
@@ -186,27 +196,31 @@ gulp.task('watch', function () {
 
   /* watchers */
 
-  gulp.watch(BUILD_OUTPUT + '/**/*.html', notifyLivereload);
-  gulp.watch(BUILD_OUTPUT + '/**/*.css', notifyLivereload);
-  gulp.watch(BUILD_OUTPUT + '/**/*.js', notifyLivereload);
+  gulp.watch(BUILD_OUTPUT + '/**/*.html', notifyLivereload)
+  gulp.watch(BUILD_OUTPUT + '/**/*.css', notifyLivereload)
+  gulp.watch(BUILD_OUTPUT + '/**/*.js', notifyLivereload)
 
   /* rebuilders and copiers */
-  gulp.watch(SRC + '/**/*.styl', buildStylus({dest : BUILD_OUTPUT}));
-  gulp.watch(SRC + '/**/*.js', copyJS({dest : BUILD_OUTPUT}));
-  gulp.watch(SRC + '/**/*.html', copyHTML({dest : BUILD_OUTPUT}));
-  gulp.watch(SRC + '/**/*.css', copyCSS({dest : BUILD_OUTPUT}));
+  gulp.watch(SRC + '/**/*.styl', buildStylus({dest : BUILD_OUTPUT}))
+  gulp.watch(SRC + '/**/*.js', copyJS({dest : BUILD_OUTPUT}))
+  gulp.watch(SRC + '/**/*.html', copyHTML({dest : BUILD_OUTPUT}))
+  gulp.watch(SRC + '/**/*.css', copyCSS({dest : BUILD_OUTPUT}))
 
   /* TODO: watch for changes in fonts */
 });
 
+gulp.task('test', function () {
+  runTests()
+})
+
 gulp.task('express', function () {
-  startExpress();
+  startExpress()
 });
 
 gulp.task('livereload', function () {
-  startLivereload();
+  startLivereload()
 });
 
-gulp.task('server', ['build', 'express', 'livereload', 'watch']);
+gulp.task('server', ['build', 'express', 'livereload', 'watch'])
 
 gulp.task('default', ['server'])
