@@ -121,7 +121,7 @@ describe 'groupBy()', ->
             #   nycBlyeEyedGrouping = (averagesByCityThenEyeColor.filter (averageObject)
 
 #                       it 'should look like this', ->
-#             expect(JSON.stringify(averagesByCity, null,4)).to.equal("""
+#             expect(JSON.stringify(averagesByCityThenEyeColor, null,4)).to.equal("""
 # [
 #     {
 #         "key": "nyc",
